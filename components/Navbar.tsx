@@ -1,182 +1,166 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, Hourglass, Sparkles, User, LayoutDashboard } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Menu, X, Hourglass, Sparkles, User, LayoutDashboard, BookOpen, Layers, PenTool, UserCircle } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
-  { label: 'The Book', path: '/book' },
-  { label: 'Chapters', path: '/chapters' },
-  { label: 'Resources', path: '/resources' },
-  { label: 'Author', path: '/author' },
+  { label: 'The Book', path: '/book', icon: BookOpen },
+  { label: 'Chapters', path: '/chapters', icon: Layers },
+  { label: 'Resources', path: '/resources', icon: PenTool },
+  { label: 'Author', path: '/author', icon: UserCircle },
 ];
 
 const Navbar: React.FC = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const location = useLocation();
   const { isAuthenticated, user } = useAuth();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    setIsMobileOpen(false);
-  }, [location]);
-
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ease-in-out px-4 ${isScrolled ? 'pt-4' : 'pt-6'}`}>
-      <div className={`max-w-7xl mx-auto transition-all duration-500 ${
-        isScrolled 
-        ? 'bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)] rounded-full px-6 py-3' 
-        : 'bg-transparent px-2 py-3'
-      }`}>
-        <div className="flex items-center justify-between">
-          
-          {/* Brand */}
-          <NavLink to="/" className="flex items-center space-x-3 group relative z-10">
-            <div className="bg-brand-surfaceHighlight p-2 rounded-full border border-white/5 group-hover:border-brand-gold/30 transition-colors">
-               <Hourglass size={20} className="text-brand-gold group-hover:rotate-180 transition-transform duration-700 ease-in-out" />
-            </div>
-            <span className="font-bold text-lg tracking-tight text-white group-hover:text-brand-gold transition-colors duration-300">
-              Hours and Future
-            </span>
-          </NavLink>
+    <>
+      {/* --- DESKTOP SIDEBAR (Visible md+) --- */}
+      <aside className="hidden md:flex fixed top-0 left-0 bottom-0 w-64 bg-[#050505] border-r border-white/10 flex-col justify-between z-50 p-6">
+        
+        {/* Header */}
+        <div>
+           <NavLink to="/" className="flex items-center gap-3 mb-12 group">
+              <div className="w-10 h-10 bg-brand-gold/10 border border-brand-gold/20 rounded-lg flex items-center justify-center group-hover:bg-brand-gold group-hover:text-black transition-all duration-500">
+                 <Hourglass size={20} className="text-brand-gold group-hover:text-black" />
+              </div>
+              <div>
+                <h1 className="font-bold text-white text-lg leading-none tracking-tight">HOURS</h1>
+                <p className="text-[10px] text-brand-muted tracking-[0.2em] uppercase">And Future</p>
+              </div>
+           </NavLink>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center bg-white/5 rounded-full p-1 border border-white/5 backdrop-blur-sm">
-            {navItems.map((item) => (
+           {/* Navigation Links */}
+           <nav className="space-y-1">
+              <div className="text-[10px] text-brand-muted uppercase tracking-wider mb-4 font-mono">System</div>
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                      isActive 
+                        ? 'bg-white/10 text-white border-l-2 border-brand-gold' 
+                        : 'text-brand-muted hover:text-white hover:bg-white/5'
+                    }`
+                  }
+                >
+                  <item.icon size={16} />
+                  {item.label}
+                </NavLink>
+              ))}
+              
+              <div className="h-6"></div>
+              
+              <div className="text-[10px] text-brand-muted uppercase tracking-wider mb-4 font-mono">Intelligence</div>
               <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 relative ${
-                    isActive 
-                      ? 'text-brand-black bg-white shadow-lg' 
-                      : 'text-brand-muted hover:text-white hover:bg-white/5'
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-            {/* NextHours AI Special Link */}
-            <NavLink
-              to="/nexthours"
-              className={({ isActive }) =>
-                `flex items-center gap-2 text-sm font-bold px-5 py-2 rounded-full transition-all duration-300 ml-1 ${
-                  isActive 
-                    ? 'bg-brand-gold text-brand-black shadow-[0_0_15px_rgba(251,191,36,0.5)]' 
-                    : 'text-brand-gold hover:bg-brand-gold/10'
-                }`
-              }
-            >
-              <Sparkles size={14} />
-              NextHours AI
-            </NavLink>
-          </div>
-
-          {/* Right Actions */}
-          <div className="hidden md:flex items-center space-x-4 relative z-10">
-            {isAuthenticated ? (
-               <NavLink to="/dashboard" className="flex items-center gap-2 text-sm font-bold text-white bg-white/10 hover:bg-white/20 pl-2 pr-4 py-1.5 rounded-full transition-all border border-white/5 group">
-                  <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 bg-brand-surfaceHighlight flex items-center justify-center">
-                      {user?.profilePicture ? (
-                          <img src={user.profilePicture} alt="Me" className="w-full h-full object-cover" />
-                      ) : (
-                          <LayoutDashboard size={14} />
-                      )}
-                  </div>
-                  <span>Dashboard</span>
-               </NavLink>
-            ) : (
-               <NavLink to="/login" className="text-sm font-medium text-brand-muted hover:text-white transition-colors">
-                 Log In
-               </NavLink>
-            )}
-            
-            <NavLink 
-              to="/coming-soon"
-              className="bg-brand-gold hover:bg-white hover:text-brand-black text-brand-black font-bold text-sm py-2.5 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_rgba(251,191,36,0.2)]"
-            >
-              Get the Book
-            </NavLink>
-          </div>
-
-          {/* Mobile Toggle */}
-          <button
-            className="md:hidden text-white p-2 rounded-full hover:bg-white/10 transition-colors"
-            onClick={() => setIsMobileOpen(!isMobileOpen)}
-          >
-            {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {isMobileOpen && (
-        <div className="absolute top-full left-4 right-4 mt-2 p-0 md:hidden animate-fade-in z-40">
-          <div className="rounded-2xl p-4 flex flex-col space-y-2 shadow-2xl bg-[#000000] border border-white/10">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                    isActive
-                      ? 'bg-brand-gold text-brand-black'
-                      : 'text-brand-muted hover:bg-white/5 hover:text-white'
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-            <NavLink
                 to="/nexthours"
                 className={({ isActive }) =>
-                  `flex items-center gap-2 px-4 py-3 rounded-xl text-base font-bold transition-colors ${
-                    isActive
-                      ? 'bg-brand-gold text-brand-black'
+                  `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 border border-transparent ${
+                    isActive 
+                      ? 'bg-brand-gold/10 text-brand-gold border-brand-gold/20' 
                       : 'text-brand-gold hover:bg-brand-gold/10'
                   }`
                 }
               >
-                <Sparkles size={16} /> NextHours AI
-            </NavLink>
-            <div className="h-px bg-white/10 my-2"></div>
-            
-            {isAuthenticated ? (
-               <NavLink to="/dashboard" className="flex items-center gap-2 px-4 py-3 rounded-xl text-base font-bold text-white bg-white/10 transition-colors">
-                  <div className="w-6 h-6 rounded-full overflow-hidden border border-white/10 bg-brand-surfaceHighlight flex items-center justify-center">
+                <Sparkles size={16} />
+                NextHours AI
+              </NavLink>
+           </nav>
+        </div>
+
+        {/* Footer / Account */}
+        <div className="border-t border-white/10 pt-6">
+           {isAuthenticated ? (
+               <NavLink to="/dashboard" className="flex items-center gap-3 p-3 rounded-xl bg-[#111] border border-white/5 hover:border-brand-gold/30 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-brand-surfaceHighlight overflow-hidden">
                       {user?.profilePicture ? (
                           <img src={user.profilePicture} alt="Me" className="w-full h-full object-cover" />
                       ) : (
-                          <LayoutDashboard size={14} />
+                          <div className="w-full h-full flex items-center justify-center text-brand-muted"><User size={14} /></div>
                       )}
                   </div>
-                  Dashboard
+                  <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-white truncate group-hover:text-brand-gold">{user?.name}</p>
+                      <p className="text-[10px] text-brand-muted">Dashboard</p>
+                  </div>
                </NavLink>
-            ) : (
-               <NavLink to="/login" className="block px-4 py-3 rounded-xl text-base font-medium text-brand-muted hover:bg-white/5 hover:text-white transition-colors">
-                 Log In
-               </NavLink>
-            )}
-
-            <NavLink 
-              to="/coming-soon"
-              className="block w-full text-center bg-white text-brand-black font-bold py-3 px-5 rounded-xl hover:bg-gray-200 transition-colors"
-            >
-              Get the Book
-            </NavLink>
-          </div>
+           ) : (
+               <div className="grid grid-cols-2 gap-2">
+                   <NavLink to="/login" className="text-center py-2 rounded-lg border border-white/10 text-xs font-bold text-white hover:bg-white/5 transition-all">
+                      Log In
+                   </NavLink>
+                   <NavLink to="/coming-soon" className="text-center py-2 rounded-lg bg-white text-black text-xs font-bold hover:bg-brand-gold transition-all">
+                      Get Book
+                   </NavLink>
+               </div>
+           )}
         </div>
-      )}
-    </nav>
+      </aside>
+
+      {/* --- MOBILE HEADER (Visible < md) --- */}
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#050505]/90 backdrop-blur-md border-b border-white/10 px-4 py-3">
+        <div className="flex items-center justify-between">
+            <NavLink to="/" className="flex items-center gap-2">
+                <Hourglass size={20} className="text-brand-gold" />
+                <span className="font-bold text-white tracking-tight">Hours<span className="text-brand-muted">Future</span></span>
+            </NavLink>
+            <button 
+              onClick={() => setIsMobileOpen(!isMobileOpen)}
+              className="p-2 text-white hover:bg-white/10 rounded-lg"
+            >
+               {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+        </div>
+
+        {/* Mobile Dropdown */}
+        {isMobileOpen && (
+          <div className="absolute top-full left-0 right-0 bg-[#0A0A0A] border-b border-white/10 p-4 shadow-2xl animate-slide-up">
+            <div className="grid grid-cols-1 gap-1">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileOpen(false)}
+                  className={({ isActive }) =>
+                    `px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-3 ${
+                      isActive ? 'bg-white/10 text-white' : 'text-brand-muted hover:text-white'
+                    }`
+                  }
+                >
+                  <item.icon size={16} /> {item.label}
+                </NavLink>
+              ))}
+              <NavLink
+                  to="/nexthours"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="px-4 py-3 rounded-lg text-sm font-bold text-brand-gold bg-brand-gold/10 mt-2 flex items-center gap-3"
+              >
+                  <Sparkles size={16} /> NextHours AI
+              </NavLink>
+              
+              <div className="h-px bg-white/10 my-3"></div>
+
+              {isAuthenticated ? (
+                 <NavLink to="/dashboard" onClick={() => setIsMobileOpen(false)} className="block text-center py-3 rounded-lg bg-[#151515] border border-white/10 text-white font-bold">
+                    Go to Dashboard
+                 </NavLink>
+              ) : (
+                 <div className="flex gap-2">
+                    <NavLink to="/login" onClick={() => setIsMobileOpen(false)} className="flex-1 text-center py-3 rounded-lg border border-white/10 text-white font-bold">
+                       Log In
+                    </NavLink>
+                    <NavLink to="/coming-soon" onClick={() => setIsMobileOpen(false)} className="flex-1 text-center py-3 rounded-lg bg-brand-gold text-black font-bold">
+                       Get Book
+                    </NavLink>
+                 </div>
+              )}
+            </div>
+          </div>
+        )}
+      </nav>
+    </>
   );
 };
 

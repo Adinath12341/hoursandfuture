@@ -35,7 +35,7 @@ const AnimatedRoutes = () => {
   const location = useLocation();
 
   return (
-    <div key={location.pathname} className="animate-page-enter">
+    <div key={location.pathname} className="animate-page-enter min-h-[80vh]">
       <Routes location={location}>
         <Route path="/" element={<Home />} />
         <Route path="/book" element={<AboutBook />} />
@@ -51,7 +51,6 @@ const AnimatedRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/coming-soon" element={<ComingSoon />} />
-        {/* Fallback route to ensure Home/Hero page is shown for any unknown paths */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
@@ -63,17 +62,27 @@ const App: React.FC = () => {
     <AuthProvider>
       <Router>
         <ScrollToTop />
-        <div className="flex flex-col min-h-screen bg-brand-black relative">
-          {/* Subtle Noise Texture Overlay - Lowered Z-Index to avoid blocking interactions */}
-          <div className="fixed inset-0 opacity-[0.03] pointer-events-none z-[40] mix-blend-overlay" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
+        <div className="flex flex-col md:flex-row min-h-screen bg-[#050505] text-white overflow-x-hidden selection:bg-brand-gold selection:text-black">
+          
+          {/* Global Noise Texture */}
+          <div className="fixed inset-0 opacity-[0.04] pointer-events-none z-[5] mix-blend-overlay" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
           }}></div>
 
+          {/* Global Grid Lines */}
+          <div className="fixed inset-0 pointer-events-none z-[0] bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+
+          {/* Navigation (Sidebar on Desktop, Topbar on Mobile) */}
           <Navbar />
-          <main className="flex-grow relative z-10">
-            <AnimatedRoutes />
+
+          {/* Main Content Area */}
+          <main className="flex-grow relative z-10 flex flex-col w-full md:w-[calc(100%-16rem)] md:ml-64 transition-all duration-300">
+             <div className="flex-grow">
+                <AnimatedRoutes />
+             </div>
+             <Footer />
           </main>
-          <Footer />
+
         </div>
       </Router>
     </AuthProvider>
