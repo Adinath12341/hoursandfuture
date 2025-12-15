@@ -12,7 +12,14 @@ const Footer: React.FC = () => {
 
     setStatus('loading');
 
-    // Simulate API call
+    // Construct mailto link
+    const subject = encodeURIComponent("Newsletter Subscription Request");
+    const body = encodeURIComponent(`Please subscribe the following email to the Hours and Future newsletter:\n\n${email}`);
+    
+    // Open email client
+    window.location.href = `mailto:adinathanugu@gmail.com?subject=${subject}&body=${body}`;
+
+    // Simulate completion
     setTimeout(() => {
       setStatus('success');
       setEmail('');
@@ -82,8 +89,8 @@ const Footer: React.FC = () => {
                         <Check size={12} strokeWidth={3} />
                     </div>
                     <div>
-                        <p className="text-white text-sm font-bold">You're on the list!</p>
-                        <p className="text-brand-muted text-xs">Thank you for subscribing.</p>
+                        <p className="text-white text-sm font-bold">Email App Opened</p>
+                        <p className="text-brand-muted text-xs">Please send the pre-filled email to confirm.</p>
                     </div>
                 </div>
             ) : (
@@ -104,7 +111,7 @@ const Footer: React.FC = () => {
                   >
                     {status === 'loading' ? (
                         <>
-                            <Loader2 size={16} className="animate-spin" /> Joining...
+                            <Loader2 size={16} className="animate-spin" /> Opening Email...
                         </>
                     ) : (
                         <>

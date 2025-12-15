@@ -10,6 +10,11 @@ const ComingSoon: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
+      const subject = encodeURIComponent("Book Launch Notification Request");
+      const body = encodeURIComponent(`Please notify me when 'Hours and Future' launches.\n\nEmail to notify: ${email}`);
+      
+      window.location.href = `mailto:adinathanugu@gmail.com?subject=${subject}&body=${body}`;
+
       setSubmitted(true);
     }
   };
@@ -63,7 +68,10 @@ const ComingSoon: React.FC = () => {
            ) : (
              <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 flex items-center justify-center gap-3 text-green-500 max-w-md mx-auto animate-fade-in">
                <Check size={20} />
-               <span className="font-bold">You're on the list! We'll let you know.</span>
+               <div className="text-left text-sm">
+                  <p className="font-bold">Email App Opened.</p>
+                  <p className="opacity-80">Please send the pre-filled email to complete your request.</p>
+               </div>
              </div>
            )}
 

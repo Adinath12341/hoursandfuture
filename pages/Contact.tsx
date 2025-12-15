@@ -1,11 +1,25 @@
 import React, { useState } from 'react';
-import { Mail, MapPin } from 'lucide-react';
+import { Mail, MapPin, Check } from 'lucide-react';
 
 const Contact: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Get values from the uncontrolled inputs
+    const name = (document.getElementById('name') as HTMLInputElement).value;
+    const email = (document.getElementById('email') as HTMLInputElement).value;
+    const topic = (document.getElementById('subject') as HTMLSelectElement).value;
+    const message = (document.getElementById('message') as HTMLTextAreaElement).value;
+
+    // Construct Mailto Link
+    const subjectLine = encodeURIComponent(`Contact Form: ${topic} - ${name}`);
+    const bodyContent = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nTopic: ${topic}\n\nMessage:\n${message}`);
+    
+    // Open email client
+    window.location.href = `mailto:adinathanugu@gmail.com?subject=${subjectLine}&body=${bodyContent}`;
+    
     setSubmitted(true);
   };
 
@@ -47,12 +61,14 @@ const Contact: React.FC = () => {
           {/* Form Side */}
           <div className="lg:col-span-3 bg-[#0A0A0A] p-8 md:p-10 rounded-[2rem] border border-white/5 shadow-2xl">
             {submitted ? (
-              <div className="h-full flex flex-col items-center justify-center text-center py-12">
+              <div className="h-full flex flex-col items-center justify-center text-center py-12 animate-fade-in">
                 <div className="w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mb-6">
                   <Check size={32} />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Message Sent</h3>
-                <p className="text-brand-muted mb-8">Thanks for reaching out. I'll get back to you shortly.</p>
+                <h3 className="text-2xl font-bold text-white mb-2">Email Client Opened</h3>
+                <p className="text-brand-muted mb-8 max-w-md">
+                   We've opened your default email app with your message pre-filled. Please hit <strong>Send</strong> to complete the process.
+                </p>
                 <button onClick={() => setSubmitted(false)} className="text-brand-gold font-bold hover:underline">Send another</button>
               </div>
             ) : (
@@ -83,7 +99,7 @@ const Contact: React.FC = () => {
                 </div>
 
                 <button type="submit" className="w-full bg-brand-gold text-brand-black font-bold py-4 rounded-xl hover:bg-white transition-all shadow-lg transform hover:scale-[1.02]">
-                  Send Message
+                  Send Message via Email
                 </button>
               </form>
             )}
@@ -93,10 +109,5 @@ const Contact: React.FC = () => {
     </div>
   );
 };
-
-// Helper for check icon
-const Check = ({ size }: { size: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-);
 
 export default Contact;
