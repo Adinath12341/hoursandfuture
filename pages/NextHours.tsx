@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Send, Check, Zap, User, Bot, Image as ImageIcon, Paperclip, Video, X, Battery, LogOut, Hourglass } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Content, Part } from "@google/genai";
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ChatMessage } from '../types';
@@ -44,9 +44,13 @@ const NextHours: React.FC = () => {
       }
   }, [location.state]);
 
-  useEffect(() => {
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   // Auto-save logic
   useEffect(() => {
@@ -79,6 +83,7 @@ const NextHours: React.FC = () => {
     const userMessage = input.trim();
     const currentAttachment = attachedFile;
     
+    // Optimistic Update
     setMessages(prev => [...prev, { 
       role: 'user', 
       text: userMessage,
@@ -91,11 +96,45 @@ const NextHours: React.FC = () => {
     setIsLoading(true);
 
     try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) {
+            throw new Error("API Key not found");
+        }
+
+        const ai = new GoogleGenAI({ apiKey });
+        
+        // Prepare history for context
+        // Map our message structure to Google GenAI Content structure
+        // Skip the very first greeting message from history if it was auto-generated locally
+        const history: Content[] = messages.slice(1).map(msg => ({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }] as Part[]
+        }));
+
         const chat = ai.chats.create({
             model: 'gemini-2.5-flash',
+            history: history,
             config: {
-                systemInstruction: `You are NextHours, an advanced AI assistant integrated into the 'Hours and Future' website by Adinathreddy Anugu...` // (Shortened for brevity, keep original)
+                systemInstruction: `You are NextHours, an advanced AI assistant integrated into the 'Hours and Future' website by Adinathreddy Anugu. 
+                
+                Your Core Identity:
+                - You are a specialized growth coach for students and young adults.
+                - You are NOT a generic chatbot. You frame every answer through the lens of productivity, discipline, and future-building.
+                - You are empathetic but firm. You understand student burnout, but you push for actionable solutions, not just comfort.
+                
+                Your Knowledge Base ('Hours and Future' Methodology):
+                1. Time Audit: You believe you must track time to save it. Encourage users to audit their days.
+                2. Smart Goals: You help users refine vague wishes into specific, measurable goals.
+                3. Deep Work: You advocate for 90-minute focus blocks over multitasking.
+                4. Digital Detox: You advise on reducing screen time and social media addiction.
+                
+                Tone:
+                - Motivating, Clear, Structured, Youth-friendly but professional.
+                
+                Constraints:
+                - Keep answers concise (under 200 words unless asked for more).
+                - Use formatting (bullet points, bold text) to make advice scannable.
+                - If asked about the book, encourage them to read it for the full system.`
             }
         });
 
@@ -104,14 +143,34 @@ const NextHours: React.FC = () => {
           prompt += ` [User attached a ${currentAttachment.type}: ${currentAttachment.name}. Analyze this as if you could see it (Simulated for demo).]`;
         }
 
-        const result = await chat.sendMessage({ message: prompt });
-        const text = result.text;
+        // Add placeholder for streaming response
+        setMessages(prev => [...prev, { role: 'assistant', text: "", timestamp: Date.now() }]);
+
+        const result = await chat.sendMessageStream({ message: prompt });
         
-        setMessages(prev => [...prev, { role: 'assistant', text: text, timestamp: Date.now() }]);
+        let fullText = '';
+        for await (const chunk of result) {
+            const text = chunk.text;
+            fullText += text;
+            
+            setMessages(prev => {
+                const newArr = [...prev];
+                const lastMsgIndex = newArr.length - 1;
+                newArr[lastMsgIndex] = {
+                    ...newArr[lastMsgIndex],
+                    text: fullText
+                };
+                return newArr;
+            });
+        }
 
     } catch (error) {
         console.error("AI Error:", error);
-        setMessages(prev => [...prev, { role: 'assistant', text: "I'm having trouble connecting to the neural network right now. Please try again in a moment.", timestamp: Date.now() }]);
+        // Remove the empty placeholder if it exists, then add error
+        setMessages(prev => {
+            const newArr = prev.filter(msg => msg.text !== ""); 
+            return [...newArr, { role: 'assistant', text: "I'm having trouble connecting to the neural network right now. Please check your internet connection and try again.", timestamp: Date.now() }];
+        });
     } finally {
         setIsLoading(false);
     }
@@ -319,9 +378,8 @@ const NextHours: React.FC = () => {
                 </div>
              </div>
           ))}
-          {isLoading && (
+          {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
              <div className="flex gap-4 max-w-3xl mr-auto">
-                {/* ... Loading state ... */}
                 <div className="w-8 h-8 rounded-full bg-brand-gold text-brand-black flex items-center justify-center shrink-0 mt-1">
                    <Sparkles size={16} />
                 </div>

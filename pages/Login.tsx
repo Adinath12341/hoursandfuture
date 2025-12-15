@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, ArrowRight, Hourglass, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Hourglass, AlertCircle, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Login: React.FC = () => {
@@ -8,6 +8,7 @@ const Login: React.FC = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [passwordAttempts, setPasswordAttempts] = useState(0);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { login, signup } = useAuth();
   const navigate = useNavigate();
 
@@ -21,9 +22,7 @@ const Login: React.FC = () => {
             return;
         }
         signup(formData.email, formData.name, formData.password);
-        setIsSignUp(false);
-        setFormData(prev => ({ ...prev, password: '' })); 
-        alert('Account created! Please log in.');
+        setShowSuccessModal(true);
     } else {
         const result = await login(formData.email, formData.password);
         
@@ -44,6 +43,31 @@ const Login: React.FC = () => {
     <div className="pt-32 min-h-screen bg-brand-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none"></div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+           <div className="bg-[#0A0A0A] border border-brand-gold/30 rounded-[2rem] max-w-md w-full p-8 relative shadow-[0_0_50px_rgba(251,191,36,0.2)] text-center">
+              <div className="w-16 h-16 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-6 text-brand-gold border border-brand-gold/20">
+                 <Check size={32} />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Welcome to the Future</h3>
+              <p className="text-brand-muted mb-8 leading-relaxed">
+                 Thank you for creating your account. Your journey to mastering time starts now. Please log in to access your dashboard.
+              </p>
+              <button 
+                 onClick={() => {
+                    setShowSuccessModal(false);
+                    setIsSignUp(false);
+                    setFormData(prev => ({ ...prev, password: '' }));
+                 }}
+                 className="w-full bg-brand-gold text-brand-black font-bold py-3 rounded-xl hover:bg-white transition-all shadow-lg cursor-pointer"
+              >
+                 Log In to Account
+              </button>
+           </div>
+        </div>
+      )}
 
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
@@ -141,7 +165,7 @@ const Login: React.FC = () => {
                   </div>
               )}
 
-              <button type="submit" className="w-full bg-brand-gold text-brand-black font-bold py-4 rounded-xl hover:bg-white transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] transform hover:scale-[1.02] mt-4 flex items-center justify-center gap-2">
+              <button type="submit" className="w-full bg-brand-gold text-brand-black font-bold py-4 rounded-xl hover:bg-white transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] transform hover:scale-[1.02] mt-4 flex items-center justify-center gap-2 cursor-pointer">
                  {isSignUp ? 'Sign Up' : 'Log In'} <ArrowRight size={18} />
               </button>
            </form>
